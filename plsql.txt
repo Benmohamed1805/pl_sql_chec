@@ -1,0 +1,49 @@
+1. Create or replace procedure ps_customer is 
+    cursor cur is select * from customer 
+Begin 
+    for rec in cur loop
+      dbms_output.put_line(rec.customer_id||'hello'|| rec.customer_name ||'hello'||rec.customer_tel);
+    end loop;
+End ;
+/
+2.(sol2/first)
+Declare 
+    v_customer customer%rowtype;
+Begin
+    select * into v_customer from customer where customer_name='asma';
+    dbms_output.put_line(v_customer.customer_id||' '||v_customer.customer_name||' '||v_customer.customer_tel);
+End;
+/
+3.CREATE OR REPLACE PROCEDURE PS_Customer_Prodcut (v_customer_id customer.customer_id%type) IS 
+CURSOR cur IS SELECT customer_name from customer where customer_id=v_customer_id;
+cursor cur2 is select product_name from product where product_id in (select product_id from orders where customer_id=v_customer_id);
+BEGIN
+
+	FOR rec IN cur2 LOOP
+		dbms_output.put_line(rec.product_name);
+	END LOOP;
+Exception    
+when No_Data_Found then 
+dbms_output.put_line('No products returned or customer not found');
+END;
+/
+4.function
+CREATE OR REPLACE FUNCTION FN_Customer_Orders (v_customer_id customer.customer_id%type) RETURN number IS
+	nb_order number;
+BEGIN
+	SELECT count(*) into nb_order FROM orders WHERE customer_id=v_customer_id;
+	RETURN nb_order;
+END;
+/
+
+
+5.CREATE or replace trigger trig_log
+BEFORE INSERT or update ON orders FOR EACH ROW
+
+BEGIN
+	IF (:new.order_date<sysdate)then 
+	RAISE_APPLICATION_ERROR (-20100 ,
+	'Order Date must be greater than or equal to todays date');
+    END IF ; 
+END;
+/
